@@ -1,4 +1,2 @@
-./.settins
-./bin/
-./.classpath
-./.project
+/.*
+/bin/

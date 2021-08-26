@@ -14,27 +14,17 @@ public class EasyItem {
 	private final ItemStack item;
 	private final ItemAction action;
 	private Set<String> Permissions = new HashSet<String>();
-	
-	protected final static String code = "69247356";
-	protected final static String customTagName = "EASYITEMCODE";
-	
-	public EasyItem(String name, Material m, List<String> lore, ItemAction action) {
-		item = setNbtTag(getItem(name, lore, m), customTagName, code);
-		this.action = action;
-	}
-	
-	/**
-	 * Creates an EasyItem and registers it in the handler.
-	 * 
-	 * @return EasyItem
-	 * 
-	 * */
-	public static EasyItem createItem(String name, Material m, List<String> lore, ItemAction action) {
-		EasyItem item = new EasyItem(name, m, lore, action);
-		ItemHandler.add(item);
-		return item;
-	}
 
+	private final String code;
+	private final String codeName;
+	
+	public EasyItem(ItemHandler handler, String name, Material m, List<String> lore, ItemAction action) {
+		item = setNbtTag(getItem(name, lore, m), handler.getItemCodeName(), handler.getItemCode());
+		this.action = action;
+		this.code = handler.getItemCode();
+		this.codeName = handler.getItemCodeName();
+	}
+	
 	@Override
 	public boolean equals(Object obj) {
 		if(!(obj instanceof ItemStack) && !(obj instanceof EasyItem)) return false;
@@ -75,14 +65,6 @@ public class EasyItem {
 		meta.setDisplayName(name);
 		out.setItemMeta(meta);
 		return out;
-	}
-	
-	public static boolean isValidItem(ItemStack item) {
-		if(item.hasItemMeta() && getNbtTag(item, customTagName).equals(code)) {
-			return true;
-		}
-		
-		return false;
 	}
 	
 	public void addPermissions(String... permissions) {

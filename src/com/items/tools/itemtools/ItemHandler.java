@@ -1,6 +1,7 @@
 package com.items.tools.itemtools;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -11,32 +12,54 @@ import org.bukkit.inventory.ItemStack;
 
 public class ItemHandler implements Listener {
 	
-	private static Set<EasyItem> easyItems = new HashSet<EasyItem>();
+	private Set<EasyItem> easyItems = new HashSet<EasyItem>();
+	private HashMap<ItemStack, EasyItem> itemToEasyItem = new HashMap<>();
 	
-	public static void add(EasyItem... items) {
-		easyItems.addAll(Arrays.asList(items));
+	private final String itemCode;
+	private final String itemCodeName;
+	
+	public ItemHandler(String itemCode, String itemCodeName) {
+		this.itemCode = itemCode;
+		this.itemCodeName = itemCodeName;
 	}
 	
-	public static EasyItem getEasyItemWithItem(ItemStack item) {
-		for(EasyItem i : easyItems) {
-			if(i.equals((Object)item)) {
-				return i;
-			}
+	public void add(EasyItem... items) {
+		easyItems.addAll(Arrays.asList(items));
+		for(EasyItem item : items) {
+			itemToEasyItem.put(item.getItem(), item);
 		}
-		return null;
+	}
+	
+	public EasyItem getEasyItemWithItem(ItemStack item) {
+		return itemToEasyItem.get(item);
 	}
 	
 	@EventHandler
 	public void OnPlayerInteract(PlayerInteractEvent e) {
-		EasyItem i = ItemHandler.getEasyItemWithItem(e.getItem());
+		EasyItem i = this.getEasyItemWithItem(e.getItem());
 		if(i == null) return;
 		e.setCancelled(true);
 		
-		if(i.getAction() != null && i.hasAcces(e.getPlayer()) && EasyItem.isValidItem(e.getItem())) i.getAction().apply(e);
+		if(i.getAction() != null && i.hasAcces(e.getPlayer()) && isValidItem(this, e.getItem())) i.getAction().apply(e);
+	}
+	
+	public static boolean isValidItem(ItemHandler handler, ItemStack item) {
+		if(item.hasItemMeta() && EasyItem.getNbtTag(item, handler.getItemCodeName()).equals(handler.getItemCode())) {
+			return true;
+		}
+		return false;
 	}
 
-	public static Set<EasyItem> getEasyItems() {
+	public Set<EasyItem> getEasyItems() {
 		return easyItems;
+	}
+
+	public String getItemCode() {
+		return itemCode;
+	}
+
+	public String getItemCodeName() {
+		return itemCodeName;
 	}
 	
 }
